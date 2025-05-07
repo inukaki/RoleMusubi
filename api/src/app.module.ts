@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServersModule } from './servers/servers.module';
+import { RolesService } from './roles/roles.service';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -20,8 +22,9 @@ import { ServersModule } from './servers/servers.module';
       synchronize: true,
     }),
     ServersModule,
+    RolesModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [RolesService],
 })
 export class AppModule {}
