@@ -13,4 +13,8 @@ export class ServersService {
         const server = this.serverRepository.create({ name, serverId });
         return this.serverRepository.save(server);
     }
+    async delete(serverId: string): Promise<void> {
+        console.log('Deleting server with ID:あああ', serverId);
+        await this.serverRepository.delete({ serverId });
+    }
 }
