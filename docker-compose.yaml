@@ -1,4 +1,11 @@
 services:
+  api:
+    build: ./api
+    env_file: .env
+    ports:
+      - "8000:8000"
+    networks:
+      - my_network
   db:
     image: postgres
     env_file: .env
