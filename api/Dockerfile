@@ -13,8 +13,5 @@ RUN npm install
 # アプリケーションコードをコピー
 COPY . .
 
-# ビルド
-RUN npm run build
-
-# アプリケーションを起動
+# 開発環境用のコマンド
 CMD ["npm", "run", "start:dev"]
