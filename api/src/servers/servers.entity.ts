@@ -1,13 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, Column, PrimaryColumn } from "typeorm";
 
 @Entity()
 export class Server {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryColumn()
+    serverId: string;
 
     @Column()
     name: string;
-
-    @Column({ unique: true })
-    serverId: string;
 }
