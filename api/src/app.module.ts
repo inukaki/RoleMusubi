@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServersModule } from './servers/servers.module';
-import { RolesService } from './roles/roles.service';
 import { RolesModule } from './roles/roles.module';
 
 @Module({
@@ -25,6 +24,6 @@ import { RolesModule } from './roles/roles.module';
     RolesModule,
   ],
   controllers: [],
-  providers: [RolesService],
+  providers: [],
 })
 export class AppModule {}

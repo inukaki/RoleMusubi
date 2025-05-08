@@ -1,19 +1,17 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
+import { RoleRelation } from "./role-relation.entity";
 
 @Entity()
 export class Role {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryColumn()
+    roleId: string;
 
     @Column()
     name: string;
 
-    @Column({ unique: true })
-    roleId: string;
+    @OneToMany(() => RoleRelation, relation => relation.parent)
+    parentRelations: RoleRelation[];
 
-    @OneToMany(() => Role, (role) => role.children, { nullable: true , onDelete: 'SET NULL'})
-    parent: Role;
-
-    @ManyToOne(() => Role, (role) => role.parent)
-    children: Role[];
+    @OneToMany(() => RoleRelation, relation => relation.child)
+    childRelations: RoleRelation[];
 }
