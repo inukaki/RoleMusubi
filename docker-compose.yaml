@@ -4,6 +4,9 @@ services:
     env_file: .env
     ports:
       - "8000:8000"
+    volumes:
+      - ./api:/usr/src/app
+      - /usr/src/app/node_modules
     networks:
       - my_network
   db:
