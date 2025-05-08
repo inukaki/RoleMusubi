@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServersModule } from './servers/servers.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ServersModule } from './servers/servers.module';
       synchronize: true,
     }),
     ServersModule,
+    RolesModule,
   ],
   controllers: [],
   providers: [],
