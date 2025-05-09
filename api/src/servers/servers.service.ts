@@ -13,6 +13,12 @@ export class ServersService {
         const server = this.serverRepository.create({ name, serverId });
         return this.serverRepository.save(server);
     }
+    async findAll(): Promise<Server[]> {
+        return this.serverRepository.find();
+    }
+    async findOne(serverId: string): Promise<Server | null> {
+        return this.serverRepository.findOne({ where: { serverId } });
+    }
     async delete(serverId: string): Promise<void> {
         await this.serverRepository.delete({ serverId });
     }

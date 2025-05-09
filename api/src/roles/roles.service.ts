@@ -99,4 +99,12 @@ export class RolesService {
 
         return role.parentRelations.map(relation => relation.child);
     }
+
+    async findAll(): Promise<Role[]> {
+        return this.roleRepository.find();
+    }
+
+    async findOne(roleId: string): Promise<Role | null> {
+        return this.roleRepository.findOne({ where: { roleId } });
+    }
 }

@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Param, Post, Get } from '@nestjs/common';
 import { ServersService } from './servers.service';
+import { Server } from './servers.entity';
 
 @Controller('servers')
 export class ServersController {
@@ -15,5 +16,13 @@ export class ServersController {
     async deleteServer(@Param('serverId') serverId: string) {
         const server = await this.serversService.delete(serverId);
         return server;
+    }
+    @Get()
+    findAll() {
+        return this.serversService.findAll();
+    }
+    @Get(':serverId')
+    findOne(@Param('serverId') serverId: string) {
+        return this.serversService.findOne(serverId);
     }
 }
