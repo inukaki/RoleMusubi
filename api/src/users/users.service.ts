@@ -18,7 +18,12 @@ export class UsersService {
     private rolesService: RolesService,
   ) {}
 
-  async addRoleToUser(discordId: string, roleId: string): Promise<UserRole[]> {
+  private async addRoleToUserInternal(discordId: string, roleId: string, addedRoles: Set<string> = new Set()): Promise<UserRole[]> {
+    if (addedRoles.has(roleId)) {
+      return []; // 既に追加済みのロールはスキップ
+    }
+    addedRoles.add(roleId);
+
     const user = await this.usersRepository.findOne({ where: { discordId } });
     const role = await this.rolesRepository.findOne({ where: { roleId } });
 
@@ -26,29 +31,34 @@ export class UsersService {
       throw new Error('User or Role not found');
     }
 
-    // 親ロールを取得
+    const result: UserRole[] = [];
+
+    // 親ロールを取得して再帰的に追加
     const parentRoles = await this.rolesService.getAllParents(roleId);
-    
-    // 親ロールと子ロールを追加
-    const addedRoles: UserRole[] = [];
-    
-    // まず親ロールを追加
     for (const parentRole of parentRoles) {
-      const userRole = new UserRole();
-      userRole.discordId = discordId;
-      userRole.roleId = parentRole.roleId;
-      userRole.assignedAt = new Date();
-      addedRoles.push(await this.userRoleRepository.save(userRole));
+      const parentResults = await this.addRoleToUserInternal(discordId, parentRole.roleId, addedRoles);
+      result.push(...parentResults);
     }
 
-    // 次に子ロールを追加
-    const childUserRole = new UserRole();
-    childUserRole.discordId = discordId;
-    childUserRole.roleId = roleId;
-    childUserRole.assignedAt = new Date();
-    addedRoles.push(await this.userRoleRepository.save(childUserRole));
+    // 子ロールを取得して再帰的に追加
+    const childRoles = await this.rolesService.getAllChildren(roleId);
+    for (const childRole of childRoles) {
+      const childResults = await this.addRoleToUserInternal(discordId, childRole.roleId, addedRoles);
+      result.push(...childResults);
+    }
 
-    return addedRoles;
+    // 現在のロールを追加
+    const userRole = new UserRole();
+    userRole.discordId = discordId;
+    userRole.roleId = roleId;
+    userRole.assignedAt = new Date();
+    result.push(await this.userRoleRepository.save(userRole));
+
+    return result;
+  }
+
+  async addRoleToUser(discordId: string, roleId: string): Promise<UserRole[]> {
+    return this.addRoleToUserInternal(discordId, roleId);
   }
 
   async removeRoleFromUser(discordId: string, roleId: string): Promise<void> {
