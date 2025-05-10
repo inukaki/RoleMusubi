@@ -13,7 +13,7 @@ export class UserRole {
   @Column()
   roleId: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'timestamp' })
   assignedAt: Date;
 
   @ManyToOne(() => User, user => user.userRoles)

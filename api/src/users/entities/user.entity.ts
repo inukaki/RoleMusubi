@@ -6,7 +6,7 @@ export class User {
   @PrimaryColumn()
   discordId: string;
 
-  @Column()
+  @Column({ nullable: true })
   username: string;
 
   @OneToMany(() => UserRole, userRole => userRole.user)

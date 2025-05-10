@@ -24,8 +24,15 @@ export class UsersService {
     }
     addedRoles.add(roleId);
 
-    const user = await this.usersRepository.findOne({ where: { discordId } });
+    let user = await this.usersRepository.findOne({ where: { discordId } });
     const role = await this.rolesRepository.findOne({ where: { roleId } });
+
+    // ユーザーが存在しない場合は作成
+    if (!user) {
+      user = new User();
+      user.discordId = discordId;
+      user = await this.usersRepository.save(user);
+    }
 
     if (!user || !role) {
       throw new Error('User or Role not found');
@@ -36,15 +43,16 @@ export class UsersService {
     // 親ロールを取得して再帰的に追加
     const parentRoles = await this.rolesService.getAllParents(roleId);
     for (const parentRole of parentRoles) {
-      const parentResults = await this.addRoleToUserInternal(discordId, parentRole.roleId, addedRoles);
-      result.push(...parentResults);
-    }
+      // 親ロールが既にユーザーに割り当てられているか確認
+      const existingParentRole = await this.userRoleRepository.findOne({
+        where: { discordId, roleId: parentRole.roleId }
+      });
 
-    // 子ロールを取得して再帰的に追加
-    const childRoles = await this.rolesService.getAllChildren(roleId);
-    for (const childRole of childRoles) {
-      const childResults = await this.addRoleToUserInternal(discordId, childRole.roleId, addedRoles);
-      result.push(...childResults);
+      // 親ロールが割り当てられていない場合のみ追加
+      if (!existingParentRole) {
+        const parentResults = await this.addRoleToUserInternal(discordId, parentRole.roleId, addedRoles);
+        result.push(...parentResults);
+      }
     }
 
     // 現在のロールを追加
