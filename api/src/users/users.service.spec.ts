@@ -5,6 +5,7 @@ import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { Role } from '../roles/roles.entity';
 import { UserRole } from './entities/user-role.entity';
+import { RolesService } from '../roles/roles.service';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -36,6 +37,7 @@ describe('UsersService', () => {
           provide: getRepositoryToken(User),
           useValue: {
             findOne: jest.fn(),
+            save: jest.fn(),
           },
         },
         {
@@ -50,6 +52,14 @@ describe('UsersService', () => {
             findOne: jest.fn(),
             save: jest.fn(),
             remove: jest.fn(),
+            find: jest.fn(),
+          },
+        },
+        {
+          provide: RolesService,
+          useValue: {
+            getAllParents: jest.fn().mockResolvedValue([]),
+            getAllChildren: jest.fn().mockResolvedValue([]),
           },
         },
       ],
@@ -73,7 +83,7 @@ describe('UsersService', () => {
 
       const result = await service.addRoleToUser('123456789', 'role123');
 
-      expect(result).toEqual(mockUserRole);
+      expect(result).toEqual([mockUserRole]);
       expect(userRepository.findOne).toHaveBeenCalledWith({ where: { discordId: '123456789' } });
       expect(roleRepository.findOne).toHaveBeenCalledWith({ where: { roleId: 'role123' } });
       expect(userRoleRepository.save).toHaveBeenCalled();

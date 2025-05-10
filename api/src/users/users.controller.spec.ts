@@ -37,11 +37,11 @@ describe('UsersController', () => {
 
   describe('addRoleToUser', () => {
     it('should add role to user', async () => {
-      jest.spyOn(service, 'addRoleToUser').mockResolvedValue(mockUserRole as UserRole);
+      jest.spyOn(service, 'addRoleToUser').mockResolvedValue([mockUserRole as UserRole]);
 
       const result = await controller.addRoleToUser('123456789', 'role123');
 
-      expect(result).toEqual(mockUserRole);
+      expect(result).toEqual([mockUserRole]);
       expect(service.addRoleToUser).toHaveBeenCalledWith('123456789', 'role123');
     });
   });
