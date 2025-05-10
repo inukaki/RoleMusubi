@@ -74,7 +74,12 @@ export class RolesService {
         });
     }
 
-    async getParents(roleId: string): Promise<Role[]> {
+    private async getAllParentsRecursive(roleId: string, visited: Set<string> = new Set()): Promise<Role[]> {
+        if (visited.has(roleId)) {
+            return []; // 循環参照を防ぐ
+        }
+        visited.add(roleId);
+
         const role = await this.roleRepository.findOne({
             where: { roleId },
             relations: ['childRelations', 'childRelations.parent']
@@ -84,10 +89,24 @@ export class RolesService {
             throw new Error('Role not found');
         }
 
-        return role.childRelations.map(relation => relation.parent);
+        const directParents = role.childRelations.map(relation => relation.parent);
+        const allParents = [...directParents];
+
+        // 各親ロールの親を再帰的に取得
+        for (const parent of directParents) {
+            const grandParents = await this.getAllParentsRecursive(parent.roleId, visited);
+            allParents.push(...grandParents);
+        }
+
+        return allParents;
     }
 
-    async getChildren(roleId: string): Promise<Role[]> {
+    private async getAllChildrenRecursive(roleId: string, visited: Set<string> = new Set()): Promise<Role[]> {
+        if (visited.has(roleId)) {
+            return []; // 循環参照を防ぐ
+        }
+        visited.add(roleId);
+
         const role = await this.roleRepository.findOne({
             where: { roleId },
             relations: ['parentRelations', 'parentRelations.child']
@@ -97,7 +116,24 @@ export class RolesService {
             throw new Error('Role not found');
         }
 
-        return role.parentRelations.map(relation => relation.child);
+        const directChildren = role.parentRelations.map(relation => relation.child);
+        const allChildren = [...directChildren];
+
+        // 各子ロールの子を再帰的に取得
+        for (const child of directChildren) {
+            const grandChildren = await this.getAllChildrenRecursive(child.roleId, visited);
+            allChildren.push(...grandChildren);
+        }
+
+        return allChildren;
+    }
+
+    async getAllParents(roleId: string): Promise<Role[]> {
+        return this.getAllParentsRecursive(roleId);
+    }
+
+    async getAllChildren(roleId: string): Promise<Role[]> {
+        return this.getAllChildrenRecursive(roleId);
     }
 
     async findAll(): Promise<Role[]> {

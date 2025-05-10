@@ -32,10 +32,10 @@ export class RolesController {
     }
     @Get(':roleId/parents')
     async getParents(@Param('roleId') roleId: string) {
-        return await this.rolesService.getParents(roleId);
+        return await this.rolesService.getAllParents(roleId);
     }
     @Get(':roleId/children')
     async getChildren(@Param('roleId') roleId: string) {
-        return await this.rolesService.getChildren(roleId);
+        return await this.rolesService.getAllChildren(roleId);
     }
 }

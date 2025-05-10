@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { User } from './entities/user.entity';
 import { Role } from '../roles/roles.entity';
 import { UserRole } from './entities/user-role.entity';
 import { RolesService } from '../roles/roles.service';
-import { In } from 'typeorm';
 
 @Injectable()
 export class UsersService {
@@ -28,7 +27,7 @@ export class UsersService {
     }
 
     // 親ロールを取得
-    const parentRoles = await this.rolesService.getParents(roleId);
+    const parentRoles = await this.rolesService.getAllParents(roleId);
     
     // 親ロールと子ロールを追加
     const addedRoles: UserRole[] = [];
@@ -63,7 +62,7 @@ export class UsersService {
     }
 
     // 親ロールを取得
-    const parentRoles = await this.rolesService.getParents(roleId);
+    const parentRoles = await this.rolesService.getAllParents(roleId);
 
     // 子ロールを削除
     await this.userRoleRepository.remove(userRole);
@@ -71,7 +70,7 @@ export class UsersService {
     // 各親ロールについて、他の子ロールとの紐付けを確認
     for (const parentRole of parentRoles) {
       // このユーザーが持っている、この親ロールに紐づく子ロールを取得
-      const childRoles = await this.rolesService.getChildren(parentRole.roleId);
+      const childRoles = await this.rolesService.getAllChildren(parentRole.roleId);
       
       // このユーザーが持っている、この親ロールに紐づく子ロールの数を確認
       const userChildRoles = await this.userRoleRepository.find({
