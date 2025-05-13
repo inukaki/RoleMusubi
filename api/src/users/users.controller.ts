@@ -18,7 +18,14 @@ export class UsersController {
   async removeRoleFromUser(
     @Param('discordId') discordId: string,
     @Param('roleId') roleId: string,
-  ): Promise<{ removedRoles: string[] }> {
-    return await this.usersService.removeRoleFromUser(discordId, roleId);
+  ): Promise<{ removedRoles: UserRole[] }> {
+    return { removedRoles: await this.usersService.removeRoleFromUser(discordId, roleId) };
   }
-}
+
+  @Delete(':discordId')
+  async deleteUser(
+    @Param('discordId') discordId: string,
+  ): Promise<{ deleted: boolean }> {
+    return await this.usersService.deleteUser(discordId);
+  }
+} 

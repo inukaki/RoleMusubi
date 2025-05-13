@@ -69,7 +69,7 @@ export class UsersService {
     return this.addRoleToUserInternal(discordId, roleId);
   }
 
-  async removeRoleFromUser(discordId: string, roleId: string): Promise<{ removedRoles: string[] }> {
+  async removeRoleFromUser(discordId: string, roleId: string): Promise<UserRole[]> {
     // 削除対象のロールを取得
     const userRole = await this.userRoleRepository.findOne({
       where: { discordId, roleId }
@@ -81,7 +81,7 @@ export class UsersService {
 
     // 親ロールを取得
     const parentRoles = await this.rolesService.getAllParents(roleId);
-    const removedRoles: string[] = [roleId];
+    const removedRoles: UserRole[] = [userRole];
 
     // 子ロールを削除
     await this.userRoleRepository.remove(userRole);
@@ -106,11 +106,19 @@ export class UsersService {
         });
         if (parentUserRole) {
           await this.userRoleRepository.remove(parentUserRole);
-          removedRoles.push(parentRole.roleId);
+          removedRoles.push(parentUserRole);
         }
       }
     }
 
-    return { removedRoles };
+    return removedRoles;
+  }
+
+  async deleteUser(discordId: string): Promise<{ deleted: boolean }> {
+    const userRoles = await this.userRoleRepository.find({
+      where: { discordId },
+    });
+    await this.userRoleRepository.remove(userRoles);
+    return { deleted: true };
   }
 } 
