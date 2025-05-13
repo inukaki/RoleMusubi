@@ -23,15 +23,20 @@ export class RolesService {
     }
 
     async linkChildToParent(parentId: string, childId: string): Promise<void> {
-        const parent = await this.roleRepository.findOne({ 
+        // 親ロールの取得または作成
+        let parent = await this.roleRepository.findOne({ 
             where: { roleId: parentId }
         });
-        const child = await this.roleRepository.findOne({ 
+        if (!parent) {
+            parent = await this.create(`Role ${parentId}`, parentId);
+        }
+
+        // 子ロールの取得または作成
+        let child = await this.roleRepository.findOne({ 
             where: { roleId: childId }
         });
- 
-        if (!parent || !child) {
-            throw new Error('Parent or child role not found');
+        if (!child) {
+            child = await this.create(`Role ${childId}`, childId);
         }
 
         // 既存の関係を確認
@@ -56,15 +61,20 @@ export class RolesService {
     }
 
     async unlinkChildFromParent(parentId: string, childId: string): Promise<void> {
-        const parent = await this.roleRepository.findOne({ 
+        // 親ロールの取得または作成
+        let parent = await this.roleRepository.findOne({ 
             where: { roleId: parentId }
         });
-        const child = await this.roleRepository.findOne({ 
+        if (!parent) {
+            parent = await this.create(`Role ${parentId}`, parentId);
+        }
+
+        // 子ロールの取得または作成
+        let child = await this.roleRepository.findOne({ 
             where: { roleId: childId }
         });
- 
-        if (!parent || !child) {
-            throw new Error('Parent or child role not found');
+        if (!child) {
+            child = await this.create(`Role ${childId}`, childId);
         }
 
         // 親子関係を削除
@@ -86,7 +96,7 @@ export class RolesService {
         });
 
         if (!role) {
-            throw new Error('Role not found');
+            return []; // ロールが見つからない場合は空の配列を返す
         }
 
         const directParents = role.childRelations.map(relation => relation.parent);
@@ -113,7 +123,7 @@ export class RolesService {
         });
 
         if (!role) {
-            throw new Error('Role not found');
+            return []; // ロールが見つからない場合は空の配列を返す
         }
 
         const directChildren = role.parentRelations.map(relation => relation.child);

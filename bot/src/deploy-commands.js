@@ -1,33 +1,35 @@
-const { REST, Routes }  = require('discord.js')
-const fs = require('fs');
-const path = require('path');
+const { REST, Routes } = require('discord.js');
+const fs = require('node:fs');
+const path = require('node:path');
+require('dotenv').config();
 
-const { token, applicationId, guildId} = require('../config.json');
+const commands = [];
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
-// commandsフォルダからコマンドを取得 .jsファイルのみを取得
-const commandFiles = fs.readdirSync(path.join(__dirname, 'commands')).filter(file => file.endsWith('.js'));
+for (const file of commandFiles) {
+  const filePath = path.join(commandsPath, file);
+  const command = require(filePath);
+  if ('data' in command && 'execute' in command) {
+    commands.push(command.data.toJSON());
+  } else {
+    console.log(`[警告] ${filePath} のコマンドには必要な "data" または "execute" プロパティがありません。`);
+  }
+}
 
-// コマンドを登録するためのJsonデータを作成
-const commands = commandFiles.map(file => {
-    const command = require(path.join(__dirname, 'commands', file));
-    return command.data.toJSON();
-});
+const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
-const rest = new REST({ version: '10' }).setToken(token);
-
-// 即実行関数　定義と同時に実行
 (async () => {
-    try {
-        // REST APIを使ってコマンドを登録
-        await rest.put(
-            // コマンドを登録するAPIのエンドポイントを作成
-            Routes.applicationCommands(applicationId), // グローバルコマンド
-            // Routes.applicationGuildCommands(applicationId, guildId), // ギルドコマンド
-            // コマンドのリストをリクエストボディに設定
-            { body: commands },
-        );
-        console.log('コマンドを登録しました。');
-    } catch (error) {
-        console.error('コマンドの登録中にエラーが発生しました:',error);
-    }
+  try {
+    console.log('スラッシュコマンドを登録しています...');
+
+    await rest.put(
+      Routes.applicationCommands(process.env.CLIENT_ID),
+      { body: commands },
+    );
+
+    console.log('スラッシュコマンドの登録が完了しました！');
+  } catch (error) {
+    console.error(error);
+  }
 })();

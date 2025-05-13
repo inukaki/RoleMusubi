@@ -1,0 +1,14 @@
+{
+  "name": "role-musubi-bot",
+  "version": "1.0.0",
+  "description": "Discord role management bot",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "axios": "^1.6.7",
+    "dotenv": "^16.4.1"
+  }
+} 

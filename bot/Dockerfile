@@ -1,8 +1,10 @@
-FROM node:18-alpine
+FROM node:18
+
 WORKDIR /usr/src/bot
 
-RUN npm install discord.js
-RUN npm install axios
+COPY package*.json ./
+
+RUN npm install discord.js axios dotenv
 
 COPY . .
 

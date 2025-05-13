@@ -14,4 +14,4 @@ RUN npm install
 COPY . .
 
 # 開発環境用のコマンド
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "start"]
