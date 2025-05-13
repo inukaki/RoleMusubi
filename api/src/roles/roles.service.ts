@@ -23,15 +23,20 @@ export class RolesService {
     }
 
     async linkChildToParent(parentId: string, childId: string): Promise<void> {
-        const parent = await this.roleRepository.findOne({ 
+        // 親ロールの取得または作成
+        let parent = await this.roleRepository.findOne({ 
             where: { roleId: parentId }
         });
-        const child = await this.roleRepository.findOne({ 
+        if (!parent) {
+            parent = await this.create(`Role ${parentId}`, parentId);
+        }
+
+        // 子ロールの取得または作成
+        let child = await this.roleRepository.findOne({ 
             where: { roleId: childId }
         });
- 
-        if (!parent || !child) {
-            throw new Error('Parent or child role not found');
+        if (!child) {
+            child = await this.create(`Role ${childId}`, childId);
         }
 
         // 既存の関係を確認
@@ -56,15 +61,32 @@ export class RolesService {
     }
 
     async unlinkChildFromParent(parentId: string, childId: string): Promise<void> {
-        const parent = await this.roleRepository.findOne({ 
+        // 親ロールの取得
+        let parent = await this.roleRepository.findOne({ 
             where: { roleId: parentId }
         });
-        const child = await this.roleRepository.findOne({ 
+        if (!parent) {
+            parent = await this.create(`Role ${parentId}`, parentId);
+        }
+
+        // 子ロールの取得または作成
+        let child = await this.roleRepository.findOne({ 
             where: { roleId: childId }
         });
- 
-        if (!parent || !child) {
-            throw new Error('Parent or child role not found');
+        if (!child) {
+            child = await this.create(`Role ${childId}`, childId);
+        }
+
+        // 既存の関係を確認
+        const existingRelation = await this.roleRelationRepository.findOne({
+            where: {
+                parent: { roleId: parent.roleId },
+                child: { roleId: child.roleId }
+            }
+        });
+
+        if (!existingRelation) {
+            throw new Error(`No relation exists between parent role ${parentId} and child role ${childId}`);
         }
 
         // 親子関係を削除
@@ -86,7 +108,7 @@ export class RolesService {
         });
 
         if (!role) {
-            throw new Error('Role not found');
+            return []; // ロールが見つからない場合は空の配列を返す
         }
 
         const directParents = role.childRelations.map(relation => relation.parent);
@@ -113,7 +135,7 @@ export class RolesService {
         });
 
         if (!role) {
-            throw new Error('Role not found');
+            return []; // ロールが見つからない場合は空の配列を返す
         }
 
         const directChildren = role.parentRelations.map(relation => relation.child);
@@ -135,6 +157,31 @@ export class RolesService {
     async getAllChildren(roleId: string): Promise<Role[]> {
         return this.getAllChildrenRecursive(roleId);
     }
+    async getDirectParents(roleId: string): Promise<Role[]> {
+        const role = await this.roleRepository.findOne({
+            where: { roleId },
+            relations: ['childRelations', 'childRelations.parent']
+        });
+
+        if (!role) {
+            return []; // ロールが見つからない場合は空の配列を返す
+        }
+
+        return role.childRelations.map(relation => relation.parent);
+    }
+
+    async getDirectChildren(roleId: string): Promise<Role[]> {
+        const role = await this.roleRepository.findOne({
+            where: { roleId },
+            relations: ['parentRelations', 'parentRelations.child']
+        });
+
+        if (!role) {
+            return []; // ロールが見つからない場合は空の配列を返す
+        }
+
+        return role.parentRelations.map(relation => relation.child);
+    }
 
     async findAll(): Promise<Role[]> {
         return this.roleRepository.find();
@@ -142,5 +189,21 @@ export class RolesService {
 
     async findOne(roleId: string): Promise<Role | null> {
         return this.roleRepository.findOne({ where: { roleId } });
+    }
+
+    async deleteAllChildren(roleId: string): Promise<void> {
+        // ロールの存在確認
+        const role = await this.roleRepository.findOne({
+            where: { roleId }
+        });
+
+        if (!role) {
+            throw new Error('Role not found');
+        }
+
+        // 直接的な子ロールの関係をすべて削除
+        await this.roleRelationRepository.delete({
+            parent: { roleId }
+        });
     }
 }

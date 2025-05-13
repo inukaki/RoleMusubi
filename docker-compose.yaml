@@ -18,6 +18,14 @@ services:
       - db_data:/var/lib/postgresql/data
     networks:
       - my_network
+  bot:
+    build: ./bot
+    env_file: .env
+    volumes:
+      - ./bot:/usr/src/bot
+      - /usr/src/bot/node_modules
+    networks:
+      - my_network
 volumes:
   db_data:
 networks:
