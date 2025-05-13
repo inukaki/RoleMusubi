@@ -61,7 +61,7 @@ export class RolesService {
     }
 
     async unlinkChildFromParent(parentId: string, childId: string): Promise<void> {
-        // 親ロールの取得または作成
+        // 親ロールの取得
         let parent = await this.roleRepository.findOne({ 
             where: { roleId: parentId }
         });
@@ -75,6 +75,18 @@ export class RolesService {
         });
         if (!child) {
             child = await this.create(`Role ${childId}`, childId);
+        }
+
+        // 既存の関係を確認
+        const existingRelation = await this.roleRelationRepository.findOne({
+            where: {
+                parent: { roleId: parent.roleId },
+                child: { roleId: child.roleId }
+            }
+        });
+
+        if (!existingRelation) {
+            throw new Error(`No relation exists between parent role ${parentId} and child role ${childId}`);
         }
 
         // 親子関係を削除

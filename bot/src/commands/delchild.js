@@ -15,10 +15,10 @@ module.exports = {
         .setRequired(true)),
 
   async execute(interaction) {
-    try {
-      const parentRole = interaction.options.getRole('parentid');
-      const childRole = interaction.options.getRole('childid');
+    const parentRole = interaction.options.getRole('parentid');
+    const childRole = interaction.options.getRole('childid');
 
+    try {
       // 親子関係の削除
       await axios.delete(`${process.env.API_BASE_URL}/roles/${parentRole.id}/children/${childRole.id}`);
 
@@ -48,10 +48,25 @@ module.exports = {
       await interaction.reply(`${parentRole.name}と${childRole.name}の親子関係を削除しました。`);
     } catch (error) {
       console.error(error);
-      if (error.response && error.response.status === 404) {
-        await interaction.reply('指定された親子関係は存在しません。');
+      if (error.response) {
+        if (error.response.status === 400) {
+          const errorMessage = `${parentRole.name}と${childRole.name}の間には親子関係が設定されていません。`;
+          if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({ content: errorMessage, ephemeral: true });
+          } else {
+            await interaction.reply({ content: errorMessage, ephemeral: true });
+          }
+        } else if (error.response.status === 404) {
+          if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({ content: '指定されたロールは存在しません。', ephemeral: true });
+          } else {
+            await interaction.reply({ content: '指定されたロールは存在しません。', ephemeral: true });
+          }
+        } else {
+          throw error; // その他のエラーはグローバルエラーハンドラーに委譲
+        }
       } else {
-        await interaction.reply('エラーが発生しました。');
+        throw error; // ネットワークエラーなどはグローバルエラーハンドラーに委譲
       }
     }
   },

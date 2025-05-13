@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Delete, Body, Get } from '@nestjs/common';
+import { Controller, Post, Param, Delete, Body, Get, HttpException, HttpStatus } from '@nestjs/common';
 import { RolesService } from './roles.service';
 
 @Controller('roles')
@@ -28,7 +28,15 @@ export class RolesController {
         @Param('parentId') parentId: string,
         @Param('childId') childId: string
     ) {
-        await this.rolesService.unlinkChildFromParent(parentId, childId);
+        try {
+            await this.rolesService.unlinkChildFromParent(parentId, childId);
+            return { message: 'Role relation successfully unlinked' };
+        } catch (error) {
+            if (error.message.includes('No relation exists')) {
+                throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+            }
+            throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+        }
     }
     @Get(':roleId/parents')
     async getParents(@Param('roleId') roleId: string) {
