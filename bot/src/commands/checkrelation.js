@@ -21,12 +21,12 @@ module.exports = {
       for (const [_, role] of roles) {
         if (role.name === '@everyone') continue;
 
-        // 親ロールの取得
-        const parentResponse = await axios.get(`${process.env.API_BASE_URL}/roles/${role.id}/parents`);
+        // 直接的な親ロールの取得
+        const parentResponse = await axios.get(`${process.env.API_BASE_URL}/roles/${role.id}/direct-parents`);
         const parentRoles = parentResponse.data;
         
-        // 子ロールの取得
-        const childResponse = await axios.get(`${process.env.API_BASE_URL}/roles/${role.id}/children`);
+        // 直接的な子ロールの取得
+        const childResponse = await axios.get(`${process.env.API_BASE_URL}/roles/${role.id}/direct-children`);
         const childRoles = childResponse.data;
         
         // 関係性がある場合のみ表示
@@ -34,25 +34,32 @@ module.exports = {
           description += `\n**${role.name}**\n`;
           
           if (parentRoles.length > 0) {
-            description += '親ロール: ' + parentRoles.map(r => `<@&${r.id}>`).join(', ') + '\n';
+            const parentRoleNames = parentRoles.map(r => {
+              const discordRole = guild.roles.cache.get(r.roleId);
+              return discordRole ? discordRole.name : '不明なロール';
+            });
+            description += '親ロール: ' + parentRoleNames.join(', ') + '\n';
           }
 
           if (childRoles.length > 0) {
-            description += '子ロール: ' + childRoles.map(r => `<@&${r.id}>`).join(', ') + '\n';
+            const childRoleNames = childRoles.map(r => {
+              const discordRole = guild.roles.cache.get(r.roleId);
+              return discordRole ? discordRole.name : '不明なロール';
+            });
+            description += '子ロール: ' + childRoleNames.join(', ') + '\n';
           }
         }
       }
 
       if (description === '') {
-        description = '関連性のあるロールはありません。';
+        description = 'ロール間の関連はありません。';
       }
 
       embed.setDescription(description);
-
       await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error(error);
       await interaction.reply('エラーが発生しました。');
     }
-  }
+  },
 }; 

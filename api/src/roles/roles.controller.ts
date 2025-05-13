@@ -38,4 +38,12 @@ export class RolesController {
     async getChildren(@Param('roleId') roleId: string) {
         return await this.rolesService.getAllChildren(roleId);
     }
+    @Get(':roleId/direct-parents')
+    async getDirectParents(@Param('roleId') roleId: string) {
+        return await this.rolesService.getDirectParents(roleId);
+    }
+    @Get(':roleId/direct-children')
+    async getDirectChildren(@Param('roleId') roleId: string) {
+        return await this.rolesService.getDirectChildren(roleId);
+    }
 }

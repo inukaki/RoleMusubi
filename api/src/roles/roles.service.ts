@@ -145,6 +145,31 @@ export class RolesService {
     async getAllChildren(roleId: string): Promise<Role[]> {
         return this.getAllChildrenRecursive(roleId);
     }
+    async getDirectParents(roleId: string): Promise<Role[]> {
+        const role = await this.roleRepository.findOne({
+            where: { roleId },
+            relations: ['childRelations', 'childRelations.parent']
+        });
+
+        if (!role) {
+            return []; // ロールが見つからない場合は空の配列を返す
+        }
+
+        return role.childRelations.map(relation => relation.parent);
+    }
+
+    async getDirectChildren(roleId: string): Promise<Role[]> {
+        const role = await this.roleRepository.findOne({
+            where: { roleId },
+            relations: ['parentRelations', 'parentRelations.child']
+        });
+
+        if (!role) {
+            return []; // ロールが見つからない場合は空の配列を返す
+        }
+
+        return role.parentRelations.map(relation => relation.child);
+    }
 
     async findAll(): Promise<Role[]> {
         return this.roleRepository.find();
