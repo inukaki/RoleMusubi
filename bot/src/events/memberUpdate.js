@@ -9,7 +9,6 @@ module.exports = {
       // 削除されたロールを取得
       const removedRoles = oldMember.roles.cache.filter(role => !newMember.roles.cache.has(role.id));
 
-      console.log(removedRoles);
       // ロール追加時の処理
       for (const [_, addedRole] of addedRoles) {
         // 子ロールかどうかを確認
@@ -39,8 +38,6 @@ module.exports = {
         const response = await axios.get(`${process.env.API_BASE_URL}/roles/${removedRole.id}/parents`)
           .then(response => response.data)
           .catch(() => null);
-
-        console.log(response);
 
         if (response && response.length > 0) {
           const parentRoleId = response[0].roleId;
