@@ -14,33 +14,8 @@ module.exports = {
     try {
       const parentRole = interaction.options.getRole('parentid');
 
-      // 親ロールの全ての子ロールを取得
-      const response = await axios.get(`${process.env.API_BASE_URL}/roles/${parentRole.id}/children`);
-      const childRoles = response.data;
-
-      // 各子ロールとの関係を削除
-      for (const childRole of childRoles) {
-        await axios.delete(`${process.env.API_BASE_URL}/roles/${parentRole.id}/children/${childRole.id}`);
-
-        // 子ロールのみを持つユーザーから親ロールを削除
-        const guild = interaction.guild;
-        const membersWithChildRole = guild.members.cache.filter(member => 
-          member.roles.cache.has(childRole.id)
-        );
-
-        for (const [_, member] of membersWithChildRole) {
-          if (member.roles.cache.has(parentRole.id)) {
-            // 他の子ロールを持っているかチェック
-            const hasOtherChildRoles = childRoles.some(role => 
-              role.id !== childRole.id && member.roles.cache.has(role.id)
-            );
-
-            if (!hasOtherChildRoles) {
-              await member.roles.remove(parentRole);
-            }
-          }
-        }
-      }
+      // 親ロールの全ての子ロール関係を削除
+      await axios.delete(`${process.env.API_BASE_URL}/roles/${parentRole.id}/children`);
 
       await interaction.reply(`${parentRole.name}の全ての子ロール関係を削除しました。`);
     } catch (error) {

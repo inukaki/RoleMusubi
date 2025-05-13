@@ -178,4 +178,20 @@ export class RolesService {
     async findOne(roleId: string): Promise<Role | null> {
         return this.roleRepository.findOne({ where: { roleId } });
     }
+
+    async deleteAllChildren(roleId: string): Promise<void> {
+        // ロールの存在確認
+        const role = await this.roleRepository.findOne({
+            where: { roleId }
+        });
+
+        if (!role) {
+            throw new Error('Role not found');
+        }
+
+        // 直接的な子ロールの関係をすべて削除
+        await this.roleRelationRepository.delete({
+            parent: { roleId }
+        });
+    }
 }

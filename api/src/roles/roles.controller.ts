@@ -46,4 +46,9 @@ export class RolesController {
     async getDirectChildren(@Param('roleId') roleId: string) {
         return await this.rolesService.getDirectChildren(roleId);
     }
+    @Delete(':roleId/children')
+    async deleteAllChildren(@Param('roleId') roleId: string) {
+        await this.rolesService.deleteAllChildren(roleId);
+        return { message: 'All child roles have been unlinked' };
+    }
 }
