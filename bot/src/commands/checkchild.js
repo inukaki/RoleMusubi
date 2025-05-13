@@ -14,7 +14,7 @@ module.exports = {
     try {
       const parentRole = interaction.options.getRole('parentid');
 
-      const response = await axios.get(`${process.env.API_BASE_URL}/roles/${parentRole.id}/children`);
+      const response = await axios.get(`${process.env.API_BASE_URL}/roles/${parentRole.id}/direct-children`);
       const childRoles = response.data;
 
       const embed = new EmbedBuilder()
@@ -22,13 +22,19 @@ module.exports = {
         .setColor('#0099ff')
         .setTimestamp();
 
+      let description = `**${parentRole.name}**\n`;
+
       if (childRoles.length === 0) {
-        embed.setDescription('子ロールはありません。');
+        description += '子ロール: なし\n';
       } else {
-        const roleList = childRoles.map(role => `<@&${role.id}>`).join('\n');
-        embed.setDescription(roleList);
+        const childRoleNames = childRoles.map(role => {
+          const discordRole = interaction.guild.roles.cache.get(role.roleId);
+          return discordRole ? discordRole.name : '不明なロール';
+        });
+        description += '子ロール: ' + childRoleNames.join(', ') + '\n';
       }
 
+      embed.setDescription(description);
       await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error(error);
