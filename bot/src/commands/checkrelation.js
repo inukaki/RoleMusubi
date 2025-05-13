@@ -31,22 +31,23 @@ module.exports = {
         
         // 関係性がある場合のみ表示
         if (parentRoles.length > 0 || childRoles.length > 0) {
-          description += `\n**${role.name}**\n`;
+          description += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+          description += `**${role.name}**\n`;
           
           if (parentRoles.length > 0) {
             const parentRoleNames = parentRoles.map(r => {
               const discordRole = guild.roles.cache.get(r.roleId);
-              return discordRole ? discordRole.name : '不明なロール';
+              return discordRole ? `\`${discordRole.name}\`` : '不明なロール';
             });
-            description += '親ロール: ' + parentRoleNames.join(', ') + '\n';
+            description += '親ロール: ' + parentRoleNames.join(' → ') + '\n';
           }
 
           if (childRoles.length > 0) {
             const childRoleNames = childRoles.map(r => {
               const discordRole = guild.roles.cache.get(r.roleId);
-              return discordRole ? discordRole.name : '不明なロール';
+              return discordRole ? `\`${discordRole.name}\`` : '不明なロール';
             });
-            description += '子ロール: ' + childRoleNames.join(', ') + '\n';
+            description += '子ロール: ' + childRoleNames.join(' → ') + '\n';
           }
         }
       }

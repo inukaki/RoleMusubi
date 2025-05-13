@@ -29,9 +29,9 @@ module.exports = {
       } else {
         const childRoleNames = childRoles.map(role => {
           const discordRole = interaction.guild.roles.cache.get(role.roleId);
-          return discordRole ? discordRole.name : '不明なロール';
+          return discordRole ? `\`${discordRole.name}\`` : '不明なロール';
         });
-        description += '子ロール: ' + childRoleNames.join(', ') + '\n';
+        description += '子ロール: ' + childRoleNames.join(' → ') + '\n';
       }
 
       embed.setDescription(description);
